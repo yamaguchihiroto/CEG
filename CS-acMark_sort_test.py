@@ -56,7 +56,7 @@ def derived_from_dirichlet(n,m,d,k,k2,alpha,beta,gamma,node_d,com_s,phi_d,phi_c,
             dist = np.random.normal(0.5,para_normal,t)
         elif flag == "zipfian":
             dist = np.random.zipf(para_zip,t)
-        
+
         return dist
 
     # ## generate a community size list
@@ -80,7 +80,7 @@ def derived_from_dirichlet(n,m,d,k,k2,alpha,beta,gamma,node_d,com_s,phi_d,phi_c,
     # ## node degree generation
 
     def node_degree_generation(n, m, priority, node_degree, phi_d, sigma_d, delta_d):
-        theta = distribution_generator(node_degree, phi_d, sigma_d, delta_d, n)        
+        theta = distribution_generator(node_degree, phi_d, sigma_d, delta_d, n)
         print(max(theta))
         plt.hist(theta, bins = 20)
         plt.show()
@@ -126,7 +126,7 @@ def derived_from_dirichlet(n,m,d,k,k2,alpha,beta,gamma,node_d,com_s,phi_d,phi_c,
 
 
 def make_hub(k, hub_ratio, U, C, num_of_hub):
-    
+
     hub_ex = []
     hub_los = []
     hub_node = []
@@ -160,7 +160,7 @@ def changeU(A, count_max, j_):
 
 
 
-def acmark(outpath="",n=1000,m=10000 ,d=1,k=5,k2=10,alpha=0.1,beta=10,gamma=1,node_d=0,com_s=2,phi_d=3,phi_c=3,sigma_d=0.1,sigma_c=0.1,delta_d=3,delta_c=3,att_power=0.0,att_uniform=0.0,att_normal=1.0,att_ber=0.0,dev_normal_max=0.3,dev_normal_min=0.1,dev_power_max=3,dev_power_min=2,uni_att=0.2):
+def acmark(outpath="",n=100,m=10000 ,d=1,k=5,k2=10,alpha=0.1,beta=10,gamma=1,node_d=0,com_s=2,phi_d=3,phi_c=3,sigma_d=0.1,sigma_c=0.1,delta_d=3,delta_c=3,att_power=0.0,att_uniform=0.0,att_normal=1.0,att_ber=0.0,dev_normal_max=0.3,dev_normal_min=0.1,dev_power_max=3,dev_power_min=2,uni_att=0.2):
     if outpath == "":
         raise Exception('Error! outpath is emply.')
     U,H,V,theta = derived_from_dirichlet(n,m,d,k,k2,alpha,beta,gamma,node_d,com_s,phi_d,phi_c,sigma_d,sigma_c,delta_d,delta_c,att_power,att_uniform,att_normal)
@@ -221,8 +221,8 @@ def acmark(outpath="",n=1000,m=10000 ,d=1,k=5,k2=10,alpha=0.1,beta=10,gamma=1,no
             if degree_list[i] == theta[i]:
 #                print("max degree")
                 continue
-                
-            if num_of_hub_in_clus[C[i]] > max_hub or i in hub_node:#i >= 0 and i <= sum(hub_ratio):#hub_ratio[C[i]] == 0 or 
+
+            if num_of_hub_in_clus[C[i]] > max_hub or i in hub_node:#i >= 0 and i <= sum(hub_ratio):#hub_ratio[C[i]] == 0 or
                 # step1 create candidate list
 ##                candidate = np.argsort(theta)
 ##                n_candidate = theta[i]
@@ -234,8 +234,8 @@ def acmark(outpath="",n=1000,m=10000 ,d=1,k=5,k2=10,alpha=0.1,beta=10,gamma=1,no
                 candidate = candidate_nodes[(int(len(candidate_nodes)/4)):]
 #                print(candidate)
 #                    random.shuffle(candidate)
-            
-                
+
+
             if candidate == []:
 #                print("no candidates")
                 continue
@@ -363,7 +363,7 @@ def acmark(outpath="",n=1000,m=10000 ,d=1,k=5,k2=10,alpha=0.1,beta=10,gamma=1,no
 
 
 def div_clus(all_adj_list, num_of_cluster, C):
-    
+
     cluster_adj_list = []
     cluster_G_list = []
     intra_edge = 0
@@ -397,22 +397,22 @@ def div_clus(all_adj_list, num_of_cluster, C):
 def hub_dom_CCF(cluster_G_list, num_of_cluster):
     hub_dominance_list = np.zeros(num_of_cluster)
     CCF_list = np.zeros(num_of_cluster)
-    
-    
+
+
     for cluster_num, cluster_G in enumerate(cluster_G_list):
         degree_list = list(dict(nx.degree(cluster_G)).values())
-#        print(degree_list)        
+#        print(degree_list)
         if degree_list == []:
             continue
-        
+
         max_degree = max(degree_list)
 
-        node = cluster_G.number_of_nodes()        
+        node = cluster_G.number_of_nodes()
 
         hub_dominance = max_degree / (node - 1)
         hub_dominance_list[cluster_num] = hub_dominance
-        
-        
+
+
         CCF_list[cluster_num] = nx.average_clustering(cluster_G)
 
     return hub_dominance_list, CCF_list
@@ -465,7 +465,7 @@ def CCF_Hub_cluster_size(CCF_list, hub_dominance_list, cluster_size,file_name):
     )
     trace = plotly.graph_objs.Scatter3d(x = CCF_list, y = hub_dominance_list, z = cluster_size, mode = 'markers')
     data = [trace]
-    fig = plotly.graph_objs.Figure(data=data, layout=layout) 
+    fig = plotly.graph_objs.Figure(data=data, layout=layout)
     plot_url = plotly.offline.plot(fig, auto_open = False, filename=f"CCF_Hub_cluster_size/{file_name}_upto10_font_18.html")
 
 
@@ -504,7 +504,7 @@ for i in range(10):
     G_all, all_adj_list = all_graph_adj(S)
     print(G_all.number_of_edges())
     num_of_cluster = max(C) + 1
-    
+
     cluster_adj_list, cluster_G_list, intra_edge_par = div_clus(all_adj_list, num_of_cluster, C)
     num_of_cluster = len(cluster_G_list)
     intra_edges = 0
@@ -514,14 +514,14 @@ for i in range(10):
         degree[node] = G_all.degree(node)
     plt.scatter(degree.values(), intra_edge_par.values())
     plt.show()
-    
+
 
     for cluster in cluster_G_list:
         num_of_edges = cluster.number_of_edges()
         intra_edges += num_of_edges
     intra_edge_list.append(intra_edges)
 
-    
+
     hub_domi, CCFs = hub_dom_CCF(cluster_G_list, num_of_cluster)
     for j in hub_domi:
         hub_dominance_list.append(j)
