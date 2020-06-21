@@ -168,7 +168,7 @@ def changeU(A, count_max, j_):
 
 
 
-def CEG_acmark(outpath="",n=1000,m=10000 ,d=1,k=5,k2=10,alpha=0.1,beta=10,gamma=1,node_d=0,com_s=2,phi_d=3,phi_c=3,sigma_d=0.1,sigma_c=0.1,delta_d=3,delta_c=3,att_power=0.0,att_uniform=0.0,att_normal=1.0,att_ber=0.0,dev_normal_max=0.3,dev_normal_min=0.1,dev_power_max=3,dev_power_min=2,uni_att=0.2, ):
+def CEG_acmark(outpath="",n=1000,m=10000 ,d=1,k=5,k2=10,alpha=0.1,beta=10,gamma=1,node_d=0,com_s=2,phi_d=3,phi_c=3,sigma_d=0.1,sigma_c=0.1,delta_d=3,delta_c=3,att_power=0.0,att_uniform=0.0,att_normal=1.0,att_ber=0.0,dev_normal_max=0.3,dev_normal_min=0.1,dev_power_max=3,dev_power_min=2,uni_att=0.2,core = 1):
     if outpath == "":
         raise Exception('Error! outpath is emply.')
     U,H,V,theta = derived_from_dirichlet(n,m,d,k,k2,alpha,beta,gamma,node_d,com_s,phi_d,phi_c,sigma_d,sigma_c,delta_d,delta_c,att_power,att_uniform,att_normal)
@@ -193,7 +193,7 @@ def CEG_acmark(outpath="",n=1000,m=10000 ,d=1,k=5,k2=10,alpha=0.1,beta=10,gamma=
         star_node = []
         max_core = 10
         core_ratio = np.zeros(k)
-        num_of_core_in_clus = [1] * k#(max_core + 1) * (1-np.random.power(10,k))#(max_core + 1) * (np.random.power(5,k))#[11]*k#(max_core + 1) * (1-np.random.power(10,k))#[random.randint(1,11) for i in range(k)]#(max_core + 1) * np.random.power(2,k) #[11] * k
+        num_of_core_in_clus = [core] * k#(max_core + 1) * (1-np.random.power(10,k))#(max_core + 1) * (np.random.power(5,k))#[11]*k#(max_core + 1) * (1-np.random.power(10,k))#[random.randint(1,11) for i in range(k)]#(max_core + 1) * np.random.power(2,k) #[11] * k
         for cluster_num, core in enumerate(num_of_core_in_clus):
 #            print(len(cluster_size), cluster_num)
             if cluster_num not in cluster_size:
