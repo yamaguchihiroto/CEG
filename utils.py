@@ -85,7 +85,7 @@ def node_degree(G_all, file_name):
     plt.hist(dict(nx.degree(G_all)).values(), bins = 19)#np.logspace(0,3,19), log = False)
 #    plt.gca().set_xscale("log")
 #    plt.ylim(1,10000)
-    plt.savefig(f"node_degree_pic/{file_name}_upto10_font_18.png")
+    plt.savefig(f"{file_name}_upto10_font_18.png")
     degree1 = list(dict(nx.degree(G_all)).values())
     n1 = len(degree1)
     nume = 0
@@ -119,7 +119,7 @@ def all_graph_adj(S):
     return G, adj_list
 
 def cluster_graph_adj(cluster_adj_list,file_name):
-    with open(f'move_mac/{file_name}_upto10_upto10_font_18.csv', 'w') as csvFile1:
+    with open(f'{file_name}_upto10_upto10_font_18.csv', 'w') as csvFile1:
         writer = csv.writer(csvFile1,delimiter=",")
         for data_list in cluster_adj_list[0]:
             writer.writerow(data_list)
@@ -137,7 +137,7 @@ def CCF_Hub_cluster_size(CCF_list, hub_dominance_list, cluster_size,file_name):
     trace = plotly.graph_objs.Scatter3d(x = CCF_list, y = hub_dominance_list, z = cluster_size, mode = 'markers')
     data = [trace]
     fig = plotly.graph_objs.Figure(data=data, layout=layout) 
-    plot_url = plotly.offline.plot(fig, auto_open = False, filename=f"CCF_Hub_cluster_size/{file_name}_upto10_font_18.html")
+    plot_url = plotly.offline.plot(fig, auto_open = False, filename=f"{file_name}_upto10_font_18.html")
 
 
 def CCF_Hub_heatmap(CCF_list,hub_dominance_list, file_name):
@@ -151,5 +151,52 @@ def CCF_Hub_heatmap(CCF_list,hub_dominance_list, file_name):
     ax.set_xlabel('CCF',fontsize = 18)
     ax.set_ylabel('hub_dom',fontsize = 18)
     fig.colorbar(H[3],ax=ax)
-    plt.savefig(f"heatmap_pic/{file_name}_upto10_font_18_Reds.png")
+    plt.savefig(f"{file_name}_upto10_font_18_Reds.png")
     plt.show()
+    
+    
+def analysis(file_name):
+    hub_dominance_list = []
+    CCF_list = []
+    cluster_size_list = []
+    intra_edge_list = []
+    matdata = io.loadmat(f"{file_name}.mat", squeeze_me=True)
+    X = matdata["X"]
+    S = matdata["S"]
+    C = matdata["C"]
+    G_all, all_adj_list = all_graph_adj(S)
+    print(G_all.number_of_edges())
+    num_of_cluster = max(C) + 1
+    
+    cluster_adj_list, cluster_G_list, intra_edge_par = div_clus(all_adj_list, num_of_cluster, C)
+    num_of_cluster = len(cluster_G_list)
+    intra_edges = 0
+    degree = defaultdict(int)
+    for node in intra_edge_par.keys():
+        intra_edge_par[node] = intra_edge_par[node] / G_all.degree(node) / 2
+        degree[node] = G_all.degree(node)
+    plt.scatter(degree.values(), intra_edge_par.values())
+    plt.show()
+    
+
+    for cluster in cluster_G_list:
+        num_of_edges = cluster.number_of_edges()
+        intra_edges += num_of_edges
+    intra_edge_list.append(intra_edges)
+
+    
+    hub_domi, CCFs = hub_dom_CCF(cluster_G_list, num_of_cluster)
+    for j in hub_domi:
+        hub_dominance_list.append(j)
+    for j in CCFs:
+        CCF_list.append(j)
+    for cluster_G in cluster_G_list:
+        cluster_size_list.append(cluster_G.number_of_nodes())
+
+
+    #print(hub_domi, CCFs)
+    #cluster_graph_adj(cluster_adj_list)
+    print(sum(hub_dominance_list)/len(hub_dominance_list), sum(CCF_list)/len(CCF_list),sum(intra_edge_list)/len(intra_edge_list))
+    node_degree(G_all,file_name)
+    CCF_Hub_heatmap(CCF_list,hub_dominance_list,file_name)
+    CCF_Hub_cluster_size(CCF_list, hub_dominance_list, cluster_size_list,file_name)
