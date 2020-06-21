@@ -133,23 +133,23 @@ def derived_from_dirichlet(n,m,d,k,k2,alpha,beta,gamma,node_d,com_s,phi_d,phi_c,
     return U,H,V,theta
 
 
-def make_hub(k, hub_ratio, U, C, num_of_hub):
+def make_core(k, core_ratio, U, C, num_of_core):
     
-    hub_ex = []
-    hub_los = []
-    hub_node = []
-#    print(hub_node)
-    hub_count = np.zeros(k)
+    core_ex = []
+    core_los = []
+    core_node = []
+#    print(core_node)
+    core_count = np.zeros(k)
     for node_num, cluster_num in enumerate(C):
-        if hub_count[cluster_num] < hub_ratio[cluster_num]:
-            hub_node.append(node_num)
-            hub_count[cluster_num] += 1
-    print(hub_count)
-    for cluster_num, hub_counter in enumerate(hub_count):
-        if hub_counter < hub_ratio[cluster_num]:
+        if core_count[cluster_num] < core_ratio[cluster_num]:
+            core_node.append(node_num)
+            core_count[cluster_num] += 1
+    print(core_count)
+    for cluster_num, core_counter in enumerate(core_count):
+        if core_counter < core_ratio[cluster_num]:
             print(f"{cluster_num} LOH")
-#    print(hub_node)
-    return hub_node
+#    print(core_node)
+    return core_node
 
 def change(A, count_max, j_):
     t = A[-(count_max+1)]
@@ -168,7 +168,7 @@ def changeU(A, count_max, j_):
 
 
 
-def acmark(outpath="",n=1000,m=10000 ,d=1,k=5,k2=10,alpha=0.1,beta=10,gamma=1,node_d=0,com_s=2,phi_d=3,phi_c=3,sigma_d=0.1,sigma_c=0.1,delta_d=3,delta_c=3,att_power=0.0,att_uniform=0.0,att_normal=1.0,att_ber=0.0,dev_normal_max=0.3,dev_normal_min=0.1,dev_power_max=3,dev_power_min=2,uni_att=0.2, ):
+def CEG_acmark(outpath="",n=1000,m=10000 ,d=1,k=5,k2=10,alpha=0.1,beta=10,gamma=1,node_d=0,com_s=2,phi_d=3,phi_c=3,sigma_d=0.1,sigma_c=0.1,delta_d=3,delta_c=3,att_power=0.0,att_uniform=0.0,att_normal=1.0,att_ber=0.0,dev_normal_max=0.3,dev_normal_min=0.1,dev_power_max=3,dev_power_min=2,uni_att=0.2, ):
     if outpath == "":
         raise Exception('Error! outpath is emply.')
     U,H,V,theta = derived_from_dirichlet(n,m,d,k,k2,alpha,beta,gamma,node_d,com_s,phi_d,phi_c,sigma_d,sigma_c,delta_d,delta_c,att_power,att_uniform,att_normal)
@@ -191,26 +191,26 @@ def acmark(outpath="",n=1000,m=10000 ,d=1,k=5,k2=10,alpha=0.1,beta=10,gamma=1,no
         countd = 0
         count_max = 0
         star_node = []
-        max_hub = 10
-        hub_ratio = np.zeros(k)
-        num_of_hub_in_clus = [1] * k#(max_hub + 1) * (1-np.random.power(10,k))#(max_hub + 1) * (np.random.power(5,k))#[11]*k#(max_hub + 1) * (1-np.random.power(10,k))#[random.randint(1,11) for i in range(k)]#(max_hub + 1) * np.random.power(2,k) #[11] * k
-        for cluster_num, hub in enumerate(num_of_hub_in_clus):
+        max_core = 10
+        core_ratio = np.zeros(k)
+        num_of_core_in_clus = [1] * k#(max_core + 1) * (1-np.random.power(10,k))#(max_core + 1) * (np.random.power(5,k))#[11]*k#(max_core + 1) * (1-np.random.power(10,k))#[random.randint(1,11) for i in range(k)]#(max_core + 1) * np.random.power(2,k) #[11] * k
+        for cluster_num, core in enumerate(num_of_core_in_clus):
 #            print(len(cluster_size), cluster_num)
             if cluster_num not in cluster_size:
                 cluster_size[cluster_num] = 0
-            if hub > max_hub:
-                hub_ratio[cluster_num] = 0
+            if core > max_core:
+                core_ratio[cluster_num] = 0
             else:
-                hub_ratio[cluster_num] = int(hub)
-        print(cluster_size.values(), num_of_hub_in_clus,hub_ratio)
-        num_of_hub = int(sum(hub_ratio))
+                core_ratio[cluster_num] = int(core)
+        print(cluster_size.values(), num_of_core_in_clus,core_ratio)
+        num_of_core = int(sum(core_ratio))
     # list of edge construction candidates
         S = sparse.dok_matrix((n,n))
         degree_list = np.zeros(n)
         # print_count=0
         theta = np.sort(theta)[::-1]
-#        if hub_ratio != 0:
-        hub_node = make_hub(k, hub_ratio, U, C, num_of_hub)
+#        if core_ratio != 0:
+        core_node = make_core(k, core_ratio, U, C, num_of_core)
         candidate_nodes = list(range(n))
         for i in range(n):
 #            print(candidate_nodes)
@@ -218,7 +218,7 @@ def acmark(outpath="",n=1000,m=10000 ,d=1,k=5,k2=10,alpha=0.1,beta=10,gamma=1,no
             #     print(str(print_count)+"%",end="\r",flush=True)
             #     print_count+=1
 #            print(i)
-            if i in hub_node and hub_ratio[C[i]] == 1 and theta[i] >= cluster_size[C[i]]:
+            if i in core_node and core_ratio[C[i]] == 1 and theta[i] >= cluster_size[C[i]]:
                 for node_num in range(i + 1,n):
                     if C[i] == C[node_num]:
                         S[i,node_num] = 1
@@ -231,12 +231,12 @@ def acmark(outpath="",n=1000,m=10000 ,d=1,k=5,k2=10,alpha=0.1,beta=10,gamma=1,no
 #                print("max degree")
                 continue
                 
-            if num_of_hub_in_clus[C[i]] > max_hub or i in hub_node:#i >= 0 and i <= sum(hub_ratio):#hub_ratio[C[i]] == 0 or 
+            if num_of_core_in_clus[C[i]] > max_core or i in core_node:#i >= 0 and i <= sum(core_ratio):#core_ratio[C[i]] == 0 or 
                 # step1 create candidate list
 ##                candidate = np.argsort(theta)
 ##                n_candidate = theta[i]
                 candidate = candidate_nodes
-            else:#if i >= sum(hub_ratio):
+            else:#if i >= sum(core_ratio):
                 # step1 create candidate list
 ##                candidate = np.argsort(theta)
 ##                n_candidate = theta[i]
