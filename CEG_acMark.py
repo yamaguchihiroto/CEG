@@ -1,19 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Sun Jun 21 14:57:13 2020
-
-@author: yamaguchihiroto
-"""
-
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Mar 16 14:28:09 2020
-
-@author: yamaguchi
-"""
-
 from scipy import io
 import numpy as np
 import csv
@@ -53,7 +37,6 @@ def derived_from_dirichlet(n,m,d,k,k2,alpha,beta,gamma,node_d,com_s,phi_d,phi_c,
 #            dist = np.random.pareto(para_pow, t)
             dist = pareto.rvs(para_pow, size = t) - 1
             dist = dist / max(dist)
-            print(min(dist),max(dist))
 
 #            dist = 1 - np.random.power(para_pow, t) # R^{k}
 #            dist = np.random.uniform(0,1,t)
@@ -74,7 +57,6 @@ def derived_from_dirichlet(n,m,d,k,k2,alpha,beta,gamma,node_d,com_s,phi_d,phi_c,
         # chi = chi*(chi_max-chi_min)+chi_min
         chi = chi * alpha / sum(chi)
     #Cluster assignment
-        # print(chi)
         U = np.random.dirichlet(chi, n) # topology cluster matrix R^{n*k}
         return U
 
@@ -89,14 +71,8 @@ def derived_from_dirichlet(n,m,d,k,k2,alpha,beta,gamma,node_d,com_s,phi_d,phi_c,
 
     def node_degree_generation(n, m, priority, node_degree, phi_d, sigma_d, delta_d):
         theta = distribution_generator(node_degree, phi_d, sigma_d, delta_d, n)        
-        print(max(theta))
-        plt.hist(theta, bins = 20)
-        plt.show()
         if priority == "edge":
             theta = np.array(list(map(int,theta * m * 2 / sum(theta) +1)))
-        plt.hist(theta, bins = 20)
-        plt.show()
-        print(min(theta))
         if max(theta) > n:
             raise Exception('Error! phi_d is too large.')
 
@@ -144,11 +120,10 @@ def make_core(k, core_ratio, U, C, num_of_core):
         if core_count[cluster_num] < core_ratio[cluster_num]:
             core_node.append(node_num)
             core_count[cluster_num] += 1
-    print(core_count)
+#    print("core node : ", core_count)
     for cluster_num, core_counter in enumerate(core_count):
         if core_counter < core_ratio[cluster_num]:
             print(f"{cluster_num} LOH")
-#    print(core_node)
     return core_node
 
 def change(A, count_max, j_):
@@ -168,88 +143,60 @@ def changeU(A, count_max, j_):
 
 
 
-def CEG_acmark(outpath="",n=1000,m=10000 ,d=1,k=5,k2=10,alpha=0.1,beta=10,gamma=1,node_d=0,com_s=2,phi_d=3,phi_c=3,sigma_d=0.1,sigma_c=0.1,delta_d=3,delta_c=3,att_power=0.0,att_uniform=0.0,att_normal=1.0,att_ber=0.0,dev_normal_max=0.3,dev_normal_min=0.1,dev_power_max=3,dev_power_min=2,uni_att=0.2,core = 1):
+def CEG_acmark(outpath="",n=1000,m=10000 ,d=1,k=5,k2=10,alpha=0.1,beta=10,gamma=1,node_d=0,com_s=0,phi_d=100,phi_c=3,sigma_d=0.1,sigma_c=0.1,delta_d=3,delta_c=3,att_power=0.0,att_uniform=0.0,att_normal=1.0,att_ber=0.0,dev_normal_max=0.3,dev_normal_min=0.1,dev_power_max=3,dev_power_min=2,uni_att=0.2,core=[1]):
     if outpath == "":
         raise Exception('Error! outpath is emply.')
+    if len(core) != k:
+        raise Exception('Error! # cores list')
     U,H,V,theta = derived_from_dirichlet(n,m,d,k,k2,alpha,beta,gamma,node_d,com_s,phi_d,phi_c,sigma_d,sigma_c,delta_d,delta_c,att_power,att_uniform,att_normal)
-    plt.hist(theta, bins = np.logspace(0,3.5,19), log=True)
-    plt.ylim(1,10000)
-    plt.gca().set_xscale("log")
-    plt.show()
     C = [] # cluster list (finally, R^{n})
     for i in range(n):
         C.append(np.argmax(U[i]))
     cluster_size = Counter(C)
-    plt.hist(cluster_size.values(), bins = 20)
-#    plt.gca().set_xscale("log")
-    plt.show()
+    print("cluster size :", cluster_size)
 
-
-#    r *= k
-    def edge_construction(n, U, C, theta, around = 1.0, r = 10*k):
-        countr = 0
-        countd = 0
+    def edge_construction(n, U, C, theta, core, around = 1.0, r = 10*k):
         count_max = 0
         star_node = []
         max_core = 10
         core_ratio = np.zeros(k)
-        num_of_core_in_clus = [core] * k#(max_core + 1) * (1-np.random.power(10,k))#(max_core + 1) * (np.random.power(5,k))#[11]*k#(max_core + 1) * (1-np.random.power(10,k))#[random.randint(1,11) for i in range(k)]#(max_core + 1) * np.random.power(2,k) #[11] * k
+        num_of_core_in_clus = [0]*k
+        for i in cluster_size.keys():
+            num_of_core_in_clus[i] = core.pop(-1)
         for cluster_num, core in enumerate(num_of_core_in_clus):
-#            print(len(cluster_size), cluster_num)
             if cluster_num not in cluster_size:
                 cluster_size[cluster_num] = 0
             if core > max_core:
                 core_ratio[cluster_num] = 0
             else:
                 core_ratio[cluster_num] = int(core)
-        print(cluster_size.values(), num_of_core_in_clus,core_ratio)
         num_of_core = int(sum(core_ratio))
+        
     # list of edge construction candidates
         S = sparse.dok_matrix((n,n))
         degree_list = np.zeros(n)
-        # print_count=0
         theta = np.sort(theta)[::-1]
-#        if core_ratio != 0:
         core_node = make_core(k, core_ratio, U, C, num_of_core)
         candidate_nodes = list(range(n))
         for i in range(n):
-#            print(candidate_nodes)
-            # if 100*i/n+1 >= print_count:
-            #     print(str(print_count)+"%",end="\r",flush=True)
-            #     print_count+=1
-#            print(i)
             if i in core_node and core_ratio[C[i]] == 1 and theta[i] >= cluster_size[C[i]]:
                 for node_num in range(i + 1,n):
                     if C[i] == C[node_num]:
                         S[i,node_num] = 1
                         S[node_num,i] = S[i,node_num]
                         star_node.append(node_num)
-#                print(C[i])
             count = 0
-#            print(i)
             if degree_list[i] == theta[i]:
-#                print("max degree")
                 continue
-                
-            if num_of_core_in_clus[C[i]] > max_core or i in core_node:#i >= 0 and i <= sum(core_ratio):#core_ratio[C[i]] == 0 or 
-                # step1 create candidate list
-##                candidate = np.argsort(theta)
-##                n_candidate = theta[i]
-                candidate = candidate_nodes
-            else:#if i >= sum(core_ratio):
-                # step1 create candidate list
-##                candidate = np.argsort(theta)
-##                n_candidate = theta[i]
-                candidate = candidate_nodes[(int(len(candidate_nodes)/4)):]
-#                print(candidate)
-#                    random.shuffle(candidate)
             
-                
+            # step1 create candidate list
+            if num_of_core_in_clus[C[i]] > max_core or i in core_node:#i >= 0 and i <= sum(core_ratio):#core_ratio[C[i]] == 0 or 
+                candidate = candidate_nodes
+            else:
+                candidate = candidate_nodes[(int(len(candidate_nodes)/4)):]    
             if candidate == []:
-#                print("no candidates")
                 continue
-##                candidate = np.random.randint(0,n-1,size=n_candidate) # for undirected graph
-##                candidate = list(set(candidate))
+                
             # step2 create edges
             candidate_order_dict = {}
             for j in candidate:
@@ -259,15 +206,10 @@ def CEG_acmark(outpath="",n=1000,m=10000 ,d=1,k=5,k2=10,alpha=0.1,beta=10,gamma=
                     i_ = j;j_ = i
 
                 if i_ != j_ and S[i_,j_] == 0 and degree_list[i_] < around * theta[i_] and degree_list[j_] < around * theta[j_]:
-#                        print(len(candidate_order),len(U))
-                    candidate_order_dict[j_] = (1 - np.exp(-U[i_,:].transpose().dot(U[j_,:]))) * theta[j_] #* np.power(theta[j_],1) # ingoring node degree
-##                candidate_order_dict = sorted(candidate_order_dict.items(), key=lambda x:-x[1])
-#            print(candidate[0])
+                    candidate_order_dict[j_] = (1 - np.exp(-U[i_,:].transpose().dot(U[j_,:]))) * theta[j_]  # ingoring node degree
             while degree_list[i] < theta[i]:#count < r and degree_list[i] < theta[i]:
                 if candidate_order_dict == {}:
-#                    print("no candidate")
                     break
-#                print(max(list(candidate_order_dict.values())))
                 target_nodes = random.choices(list(candidate_order_dict.keys()), k=1, weights=np.power(np.array(list(candidate_order_dict.values())),1))
                 target_node = int(target_nodes[0])
                 if i in star_node and C[i] == C[target_node]:
@@ -280,27 +222,16 @@ def CEG_acmark(outpath="",n=1000,m=10000 ,d=1,k=5,k2=10,alpha=0.1,beta=10,gamma=
                     del candidate_order_dict[target_node]
                     if degree_list[target_node] == theta[target_node]:
                         candidate_nodes.remove(target_node)
-#                        print(target_node)
                         count_max += 1
                     if degree_list[i] == theta[i]:
-#                        print(i)
                         candidate_nodes.remove(i)
                         break
-                count += 1
-#                print(degree_list, theta)
-            if count == r:
-                countr += 1
-#                print((degree_list[i] , theta[i]))
-            if degree_list[i] == theta[i]:
-                countd += 1
 
-#        print(sum(theta))
-#        print((countr,countd))
-#        print(S[0])
+
 
         return S
 
-    S = edge_construction(n, U, C, theta)
+    S = edge_construction(n, U, C, theta, core)
 
     ### Attribute Generation ###
 
