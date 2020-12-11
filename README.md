@@ -11,5 +11,5 @@ k : number of communities
 core : list of the number of core-nodes for communities 
 
 more details in our paper
-
+https://web.ntpu.edu.tw/~myday/doc/ASONAM2020/ASONAM2020_Proceedings/pdf/papers/146_100_937.pdf
 
